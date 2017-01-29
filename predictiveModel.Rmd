@@ -27,7 +27,7 @@ As described earlier I used cross validation by splitting the test data into a t
 ## Results
 When using the model to predict on the test set (the 25% of the data segregated and not included when building the model) I got a prediction rate of 99.6% (out of sample prediction rate.)  This occurred using both bootstrapping and k fold cross validation.
  
-```{r model, echo=FALSE}
+```{r modelcode, echo=FALSE, message=FALSE, warning = FALSE, cache=TRUE}
 library(caret)
 library(gbm)
 library(plyr)
@@ -42,6 +42,10 @@ inTrain <- createDataPartition(y=pmltraincc$classe,
                                p=0.75, list=FALSE)
 training <- pmltraincc[inTrain,]
 testing <- pmltraincc[-inTrain,]
+```
+
+Running the models
+```{r message=FALSE, warning = FALSE, cache=TRUE}
 set.seed(3434)
 tc<-trainControl(method="cv",number=3)
 model<-train(classe ~ ., method="rf", data=training, trControl = tc,prox = TRUE)
@@ -54,13 +58,23 @@ sum(predmod == testing$classe)/length(predmod)
 ```
 
 
-This plot show
-```{r plot1, echo=FALSE,fig.cap= "Plotting results"}
+This plot shows how the error decreases  as we include new predictive variables. After about 8 variables the error rate decreases very slightly.
+
+```{r plot1, echo=FALSE, fig.cap= "Plotting results-predictive vars vs error rate", message=FALSE, warning=FALSE,cache=TRUE}
 result <- rfcv(training[,-37],training[,37], cv.fold=3)
 with(result, plot(n.var, error.cv, log="x", type="o", lwd=2))
 ```
 
+Below is a graph of the error rate verses the number of trees.  The different lines I believe is the number of predictive variables.
+
+```{r plot2, echo=FALSE, fig.cap= "Plotting results-Trees vs Error rate", message=FALSE, warning=FALSE,cache=TRUE}
+ plot(model$finalModel,main="# Of trees vs error rate")
+```
 ## Conclusion
 Based on our tests this classification task is best served by random forests.  We achieved almost 100% predictive results with this mode.
 
+
+
+
+Based on our tests this classification task is best served by random forests.  We achieved almost 100% predictive results with this model. Note that the calculations are very time consuming...a negative with the random forest model.
 
