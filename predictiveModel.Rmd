@@ -57,6 +57,14 @@ predmod<-predict(model,testing)
 sum(predmod == testing$classe)/length(predmod)
 ```
 
+The model results are as follows
+
+```{r modelres, message=FALSE, warning = FALSE, cache = TRUE}
+model$finalModel
+
+modelNTC$finalModel
+
+```
 
 This plot shows how the error decreases  as we include new predictive variables. After about 8 variables the error rate decreases very slightly.
 
