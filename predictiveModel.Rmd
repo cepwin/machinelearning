@@ -1,0 +1,66 @@
+---
+title: "Predictive Model Final Assignment"
+author: "Wendy Sarrett"
+date: "January 28, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The purpose of this paper is to discuss how I build the predictive model for classifying how an exercise was done based on a set of sensor data.  The goal was to build a model to correctly classify how an exercise was done based on sensor data provided.
+
+## Building the model
+
+The first thing that needed to be done was determine which columns were appropriate as predictors.  There were 160 columns per observation, one of which being "classe", the item we were to predict.    Most of the columns were summary data, not raw inputs.    Since the goal was to classify how the exercise was done based on sensor data I chose to go with the 36 raw sensor inputs (pitch, roll,  yaw, gyros, magnet and accelerometer)   The relevant columns were pulled out and then then data was split 75-25 into training and test sets.   This would allow the model to be validated on inputs that were independent from the data used to build the model.  Once the model was built and tested on the testing data we then predicted the classe from 20 test observation.
+
+Next, since this was a classification task the potential models that appeared relevant were partitioning (rpart), boosting (gbm) and random forests (rf.)  For each we built a model and then calculated the accuracy in predicting with the test data.  Partitioning only achieved a roughly 46% accuracy, boosting was a lot better at 96% but random forests had an almost 99.6% accuracy.   Thus we focused on that model.  We then tested to see if changing from the default bootstrapping to  k-fold cross validation (k=3) improved results.   It did not, providing essentially the same results.   We did not attempt combining boosting with the random forests as any additional accuracy would be minimal and there would be considerably more complication to the model.
+
+We started with the default random forest which uses Bootstrapping and tested another model with cross validation with K=3 folds.  While a few of the predictions were swapped around they both achieved the same accuracy in prediction and the same predictions using the official test set of 20 observations.   The prediction achieved 100% on the 20 observations.
+
+## Cross Validation
+As described earlier I used cross validation by splitting the test data into a test set and a training set and developing on the training set.   When creating the model, itself I used two different settings, bootstrap (the default) and k-fold (3) cross validation with essentially the same results.  As mentioned above they produced the same accuracy with my test set and the 20-observation test set.
+
+## Results
+When using the model to predict on the test set (the 25% of the data segregated and not included when building the model) I got a prediction rate of 99.6% (out of sample prediction rate.)  This occurred using both bootstrapping and k fold cross validation.
+ 
+```{r model, echo=FALSE}
+library(caret)
+library(gbm)
+library(plyr)
+pmltrain<-read.csv("pml-training.csv")
+pmltest<-read.csv("pml-testing.csv")
+nameset<-names(pmltrain)
+cols<-grepl("^pitch|^roll|^yaw|^gyros|^magnet|^accl|classe",nameset)
+pmltraincc<-pmltrain[,cols]
+pmltestcc<-pmltest[,cols]
+set.seed(888)
+inTrain <- createDataPartition(y=pmltraincc$classe,
+                               p=0.75, list=FALSE)
+training <- pmltraincc[inTrain,]
+testing <- pmltraincc[-inTrain,]
+set.seed(3434)
+tc<-trainControl(method="cv",number=3)
+model<-train(classe ~ ., method="rf", data=training, trControl = tc,prox = TRUE)
+predmod<-predict(model,testing)
+sum(predmod == testing$classe)/length(predmod)
+set.seed(3434)
+modelNTC<-train(classe ~ ., method="rf", data=training, prox = TRUE)
+predmod<-predict(model,testing)
+sum(predmod == testing$classe)/length(predmod)
+```
+
+
+This plot show
+```{r plot1, echo=FALSE,fig.cap= "Plotting results"}
+result <- rfcv(training[,-37],training[,37], cv.fold=3)
+with(result, plot(n.var, error.cv, log="x", type="o", lwd=2))
+```
+
+## Conclusion
+Based on our tests this classification task is best served by random forests.  We achieved almost 100% predictive results with this mode.
+
+
