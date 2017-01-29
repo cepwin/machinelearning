@@ -27,7 +27,7 @@ As described earlier I used cross validation by splitting the test data into a t
 ## Results
 When using the model to predict on the test set (the 25% of the data segregated and not included when building the model) I got a prediction rate of 99.6% (out of sample prediction rate.)  This occurred using both bootstrapping and k fold cross validation.
  
-```{r modelcode, echo=FALSE, message=FALSE, warning = FALSE, cache=TRUE}
+```{r modelcode,  message=FALSE, warning = FALSE, cache=TRUE}
 library(caret)
 library(gbm)
 library(plyr)

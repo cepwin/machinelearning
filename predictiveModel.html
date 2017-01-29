@@ -141,6 +141,20 @@ $(document).ready(function () {
 <div id="results" class="section level2">
 <h2>Results</h2>
 <p>When using the model to predict on the test set (the 25% of the data segregated and not included when building the model) I got a prediction rate of 99.6% (out of sample prediction rate.) This occurred using both bootstrapping and k fold cross validation.</p>
+<pre class="r"><code>library(caret)
+library(gbm)
+library(plyr)
+pmltrain&lt;-read.csv(&quot;pml-training.csv&quot;)
+pmltest&lt;-read.csv(&quot;pml-testing.csv&quot;)
+nameset&lt;-names(pmltrain)
+cols&lt;-grepl(&quot;^pitch|^roll|^yaw|^gyros|^magnet|^accl|classe&quot;,nameset)
+pmltraincc&lt;-pmltrain[,cols]
+pmltestcc&lt;-pmltest[,cols]
+set.seed(888)
+inTrain &lt;- createDataPartition(y=pmltraincc$classe,
+                               p=0.75, list=FALSE)
+training &lt;- pmltraincc[inTrain,]
+testing &lt;- pmltraincc[-inTrain,]</code></pre>
 <p>Running the models</p>
 <pre class="r"><code>set.seed(3434)
 tc&lt;-trainControl(method=&quot;cv&quot;,number=3)
